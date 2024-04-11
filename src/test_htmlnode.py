@@ -28,7 +28,7 @@ class TestHTMLNode(unittest.TestCase):
        
         
     # ParentNode test suite
-    def test_children_to_html(self):
+    def test_headings(self):
         node = ParentNode(
             "p",
             [
