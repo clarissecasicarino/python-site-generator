@@ -1,5 +1,3 @@
-import re
-
 from htmlnode import ParentNode
 from inline_markdown import text_to_textnodes
 from textnode import text_node_to_html_node
@@ -8,24 +6,50 @@ block_type_paragraph = "paragraph"
 block_type_heading = "heading"
 block_type_code = "code"
 block_type_quote = "quote"
-block_type_ulist = "unordered_list"
 block_type_olist = "ordered_list"
+block_type_ulist = "unordered_list"
+
 
 def markdown_to_blocks(markdown):
-    # Split the markdown into blocks using double newline as delimiter
-    blocks = re.split(r'\n{2,}', markdown)
-    
-    # Remove leading and trailing whitespace from each block
-    blocks = [block.strip() for block in blocks]
-    
-    # Remove any empty blocks
-    blocks = [block for block in blocks if block]
-    
-    return blocks
+    blocks = markdown.split("\n\n")
+    filtered_blocks = []
+    for block in blocks:
+        if block == "":
+            continue
+        block = block.strip()
+        filtered_blocks.append(block)
+    return filtered_blocks
+
+
+def markdown_to_html_node(markdown):
+    blocks = markdown_to_blocks(markdown)
+    children = []
+    for block in blocks:
+        html_node = block_to_html_node(block)
+        children.append(html_node)
+    return ParentNode("div", children, None)
+
+
+def block_to_html_node(block):
+    block_type = block_to_block_type(block)
+    if block_type == block_type_paragraph:
+        return paragraph_to_html_node(block)
+    if block_type == block_type_heading:
+        return heading_to_html_node(block)
+    if block_type == block_type_code:
+        return code_to_html_node(block)
+    if block_type == block_type_olist:
+        return olist_to_html_node(block)
+    if block_type == block_type_ulist:
+        return ulist_to_html_node(block)
+    if block_type == block_type_quote:
+        return quote_to_html_node(block)
+    raise ValueError("Invalid block type")
 
 
 def block_to_block_type(block):
     lines = block.split("\n")
+
     if (
         block.startswith("# ")
         or block.startswith("## ")
@@ -61,30 +85,6 @@ def block_to_block_type(block):
         return block_type_olist
     return block_type_paragraph
 
-def markdown_to_html_node(markdown):
-    blocks = markdown_to_blocks(markdown)
-    children = []
-    for block in blocks:
-        html_node = block_to_html_node(block)
-        children.append(html_node)
-    return ParentNode("div", children, None)
-
-
-def block_to_html_node(block):
-    block_type = block_to_block_type(block)
-    if block_type == block_type_paragraph:
-        return paragraph_to_html_node(block)
-    if block_type == block_type_heading:
-        return heading_to_html_node(block)
-    if block_type == block_type_code:
-        return code_to_html_node(block)
-    if block_type == block_type_olist:
-        return olist_to_html_node(block)
-    if block_type == block_type_ulist:
-        return ulist_to_html_node(block)
-    if block_type == block_type_quote:
-        return quote_to_html_node(block)
-    raise ValueError("Invalid block type")
 
 def text_to_children(text):
     text_nodes = text_to_textnodes(text)
